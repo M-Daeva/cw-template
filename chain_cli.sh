@@ -6,6 +6,10 @@ TXFLAG="--gas-prices 0.1ujunox --gas auto --gas-adjustment 1.3 -y -b block --cha
 BINARY="docker exec -i juno-node-1 junod"
 DIR=$(pwd)
 JUNO_DIR="$DIR/../juno"
+DIR_NAME=$(basename "$PWD")
+IMAGE_NAME="juno-node-1"
+DIR_NAME_SNAKE=$(echo $DIR_NAME | tr '-' '_')
+WASM="artifacts/$DIR_NAME_SNAKE.wasm"
 SEP="------------------------------------------------------------------------------------"
 
 waitForChainServe() {
@@ -26,15 +30,28 @@ waitForChainServe() {
   echo Ready!
 }
 
+# build optimized binary if it doesn't exist
+if [ ! -f "$WASM" ]; then
+  echo "building optimized binary..."
+  docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.12.6
+fi
+
+# stop docker container
 cd $JUNO_DIR
 echo "stopping container..."
 docker compose down
+# delete docker container
 echo "deleting container"
-docker rm -f juno-node-1 2> /dev/null
+docker rm -f $IMAGE_NAME 2> /dev/null
+# build new docker container
 echo "starting local network"
 STAKE_TOKEN=ujunox UNSAFE_CORS=true docker compose up -d
+# move binary to docker container
 cd $DIR
-docker cp artifacts/hello_world.wasm juno-node-1:/hello_world.wasm
+docker cp "artifacts/$DIR_NAME_SNAKE.wasm" "$IMAGE_NAME:/$DIR_NAME_SNAKE.wasm"
 cd $JUNO_DIR
 
 # wait for chain starting before contract storing
@@ -49,7 +66,7 @@ ALICE_ADDR=$($BINARY keys show alice --address)
 VALIDATOR_ADDR=$($BINARY keys show validator --address)
 $BINARY tx bank send $VALIDATOR_ADDR $ALICE_ADDR "250000000ujunox" --from $VALIDATOR_ADDR --yes --broadcast-mode block --sign-mode direct --chain-id $CHAIN_ID
 
-CONTRACT_CODE=$($BINARY tx wasm store "/hello_world.wasm" --from validator $TXFLAG --output json | jq -r '.logs[0].events[-1].attributes[0].value')
+CONTRACT_CODE=$($BINARY tx wasm store "/$DIR_NAME_SNAKE.wasm" --from validator $TXFLAG --output json | jq -r '.logs[0].events[-1].attributes[0].value')
 
 #---------- SMART CONTRACT INTERACTION ------------------------
 
