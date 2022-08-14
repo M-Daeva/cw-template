@@ -9,7 +9,8 @@
   "properties": {
     "count": {
       "type": "integer",
-      "format": "int32"
+      "format": "uint8",
+      "minimum": 0.0
     },
     "owner": {
       "$ref": "#/definitions/Addr"

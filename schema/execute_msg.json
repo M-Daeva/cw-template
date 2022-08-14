@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExecuteMsg",
-  "anyOf": [
+  "oneOf": [
     {
       "type": "object",
       "required": [
@@ -17,10 +17,10 @@
     {
       "type": "object",
       "required": [
-        "reset"
+        "set"
       ],
       "properties": {
-        "reset": {
+        "set": {
           "type": "object",
           "required": [
             "count"
@@ -28,7 +28,8 @@
           "properties": {
             "count": {
               "type": "integer",
-              "format": "int32"
+              "format": "uint8",
+              "minimum": 0.0
             }
           }
         }
