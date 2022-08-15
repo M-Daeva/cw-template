@@ -83,7 +83,7 @@ CONTRACT_ADDRESS=$($BINARY query wasm list-contract-by-code $CONTRACT_CODE --out
 
 # write data to file
 cd $DIR/scripts
-R="{\"ALICE_SEED\":\"$ALICE_SEED\",\"BOB_SEED\":\"$BOB_SEED\",\"ALICE_ADDR\":\"$ALICE_ADDR\",\"BOB_ADDR\":\"$BOB_ADDR\",\"CONTRACT_ADDRESS\":\"$CONTRACT_ADDRESS\"}"
+R="{\"ALICE_SEED\":\"$ALICE_SEED\",\"BOB_SEED\":\"$BOB_SEED\",\"ALICE_ADDR\":\"$ALICE_ADDR\",\"BOB_ADDR\":\"$BOB_ADDR\",\"CONTRACT_ADDRESS\":\"$CONTRACT_ADDRESS\",\"CONTRACT_CODE\":\"$CONTRACT_CODE\"}"
 echo $R > chain_data.json
 
 # run cosmjs script
